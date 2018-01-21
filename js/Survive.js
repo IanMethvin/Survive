@@ -4,16 +4,16 @@ var suriverImage;
 
 function initializeGameState() {
     canvas = $("#gameCanvas");
-    state = new CanvasState(canvas[0]);
     preload();
 }
 
 function preload() {
         // hardcoded for now, this should come from a property elsewhere
-        suriverImage = new Image();        
+        suriverImage = new Image();//Image(416, 672);        
         suriverImage.onload = function() {
-            state.draw();
+            
+            state = new CanvasState(canvas[0]);
+            //state.draw();
         }
         suriverImage.src = "img/spriteBow.png";
-        suriverImage.addEventListener("load", state.gameLoop);
 }
