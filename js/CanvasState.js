@@ -9,48 +9,62 @@ function CanvasState(canvas) {
     this.ctx = canvas.getContext('2d');
 
     // Create surviver
-    surviver = new Surviver({
+    this.surviver = new Surviver({
         ctx: this.ctx,
         image: suriverImage,
         frameSize: 64,
-        ticksPerFrame: 15,
+        ticksPerFrame: 8,
         loop: true,
         x: 10,
         y: 10
     });
 
-    this.keyMap = {65: false, 68: false, 83: false, 87: false};
+    // Map to track key presses
+    this.keyMap = {32: false, 65: false, 68: false, 83: false, 87: false};
     window.addEventListener("keydown", function(e) {
         var map = state.keyMap;
         if (e.keyCode in map) {
             map[e.keyCode] = true;
-            surviver.move(map);
+            state.checkMotion();
         }
     });
     window.addEventListener("keyup", function(e) {
         var map = state.keyMap;
         if (e.keyCode in map) {
             map[e.keyCode] = false;
+            state.checkMotion();
         }
     });
 
-    this.draw();
+    // start the animation
+    requestAnimationFrame(draw);
+    function draw() {
+        state.drawBackground();
+        state.surviver.updateSprite();
+        state.surviver.renderSprite();
+        requestAnimationFrame(draw);
+    }
 }
 
-
-// Draw game 
-CanvasState.prototype.draw = function () {
-    var drawer = this;
-
-    // create sprite drawing interval
-    var spriteInterval = setInterval( 
-        function() { 
-            drawer.drawBackground();
-            surviver.updateSprite();
-            surviver.renderSprite();
-        }, 10);
+// Check if any movement or action is occuring and update accordingly 
+CanvasState.prototype.checkMotion = function(map) {
+    var map = this.keyMap;
+    var action = false;
+    for (var key in map) {
+        if (map[key]) {
+            action = true;
+            state.surviver.move(map);
+            break;
+        }
+    }
+    if (!action) {
+        state.surviver.moving = false;
+        state.surviver.action = "move";
+        this.frameIndex = 1;
+    }
 }
 
+// Fill in background display 
 CanvasState.prototype.drawBackground = function () {
     var ctx = this.ctx;
     var w = this.width;

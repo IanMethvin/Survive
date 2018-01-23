@@ -19,26 +19,69 @@ function Surviver(options) {
     // Position settings
     this.x = options.x;
     this.y = options.y;
+    this.moving = false;
+    this.direction = "East";
+    this.action = "move";
+
+    // Map for frame locations in sprite map
+    this.movementMap = {
+        "moveFrames": 9,
+        "moveNorth": 8,
+        "moveEast": 11,
+        "moveSouth": 10,
+        "moveWest": 9,
+        "attackFrames": 13,
+        "attackNorth": 16,
+        "attackEast": 19,
+        "attackSouth": 18,
+        "attackWest": 17
+    }
+
+
+    this.setFramePosition();
 }
 
 // Update coordinates to move Surviver
 Surviver.prototype.move = function(kMap) {
     // north
-    if (kMap[87]) { //_.contains(keyPressArray, 87)) {
+    if (kMap[87]) { 
         this.y -= 1;
+        this.direction = "North";
     }
     // east
-    if (kMap[68]) { //_.contains(keyPressArray, 68)) {
+    if (kMap[68]) { 
         this.x += 1;
+        this.direction = "East";
     }
     // south
-    if (kMap[83]) { //_.contains(keyPressArray, 83)) {
+    if (kMap[83]) { 
         this.y += 1;
+        this.direction = "South";
     }
     // west
-    if (kMap[65]) { //_.contains(keyPressArray, 65)) {
+    if (kMap[65]) {
         this.x -= 1;
+        this.direction = "West";
     }
+    // attack
+    if (kMap[32]) {
+        this.action = "attack";
+    }
+    else {
+        this.action = "move";
+        if (this.frameIndex > this.movementMap[this.action + "Frames"]) {
+            this.frameIndex = 1;
+        }
+    }
+    // check if directional key is pressed and set movement bool accordingly 
+    if (kMap[87] || kMap[68] || kMap[83] || kMap[65]) {
+        this.moving = true;
+    }
+    else {
+        this.moving = false;
+    }
+
+    this.setFramePosition();
 }
 
 // Draw the animation
@@ -51,10 +94,11 @@ Surviver.prototype.renderSprite = function() {
     var fIndex = this.frameIndex;
     var hFrames = this.numberOfHFrames;
     var vFrames = this.numberOfVFrames;
+    var vfIndex = this.vFrameIndex;
 
     // Set source variables
     var sx = fIndex * w / hFrames;
-    var sy = (vFrames - 2) * fSize;//fIndex * h / vFrames;
+    var sy = vfIndex * fSize; //(vFrames - 2) * fSize;//fIndex * h / vFrames;
     var sw = w / hFrames;
     var sh = h / vFrames;//vFrames;
 
@@ -75,22 +119,29 @@ Surviver.prototype.renderSprite = function() {
         dw, // Destination width
         dh // Destination height
     );
-
 }
 
 // Update sprite frame index for animation
 Surviver.prototype.updateSprite = function() {
     this.tickCount += 1;
-
-    if (this.tickCount > this.ticksPerFrame) {
-        this.tickCount = 0;
-        // If the current frame index is in range
-        if (this.frameIndex < this.numberOfHFrames - 1) {	
-            // Go to the next frame
-            this.frameIndex += 1;
-        }	
-        else if (this.loop) {
-            this.frameIndex = 0;
+    // Only move frame index if in motion
+    if (this.action == "attack" || this.moving) {
+        if (this.tickCount > this.ticksPerFrame) {
+            this.tickCount = 0;
+            // If the current frame index is in range
+            if (this.frameIndex < this.hFrameCount - 1) {	
+                // Go to the next frame
+                this.frameIndex += 1;
+            }	
+            else if (this.loop) {
+                this.frameIndex = 0;
+            }
         }
     }
+}
+
+// Set frame index based off action and update number of frames for that action
+Surviver.prototype.setFramePosition = function() {
+    this.vFrameIndex = this.movementMap[this.action + this.direction];
+    this.hFrameCount = this.movementMap[this.action + "Frames"];
 }
