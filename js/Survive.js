@@ -1,6 +1,7 @@
 var canvas = {};
 var state = {};
 var suriverImage;
+var arrowImage;
 
 function initializeGameState() {
     canvas = $("#gameCanvas");
@@ -16,4 +17,7 @@ function preload() {
             //state.draw();
         }
         suriverImage.src = "img/spriteBow.png";
+
+        arrowImage = new Image();
+        arrowImage.src = "img/arrow2.png";
 }

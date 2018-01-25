@@ -13,7 +13,7 @@ function CanvasState(canvas) {
         ctx: this.ctx,
         image: suriverImage,
         frameSize: 64,
-        ticksPerFrame: 8,
+        ticksPerFrame: 5,
         loop: true,
         x: 10,
         y: 10
@@ -58,9 +58,7 @@ CanvasState.prototype.checkMotion = function(map) {
         }
     }
     if (!action) {
-        state.surviver.moving = false;
-        state.surviver.action = "move";
-        this.frameIndex = 1;
+        state.surviver.stopAction(map[32]);
     }
 }
 
