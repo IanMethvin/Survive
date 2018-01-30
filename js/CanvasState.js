@@ -4,8 +4,8 @@ function CanvasState(canvas) {
 
     // Initialize canvas properties
     this.canvas = canvas;
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    this.width = canvas.width;//window.innerWidth;
+    this.height = canvas.height;//window.innerHeight;
     this.ctx = canvas.getContext('2d');
 
     // Create surviver
@@ -15,8 +15,8 @@ function CanvasState(canvas) {
         frameSize: 64,
         ticksPerFrame: 5,
         loop: true,
-        x: 10,
-        y: 10
+        x: 670,
+        y: 670
     });
 
     // Map to track key presses

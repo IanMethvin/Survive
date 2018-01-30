@@ -47,24 +47,33 @@ function Surviver(options) {
 
 // Update coordinates to move Surviver
 Surviver.prototype.move = function(kMap) {
+    var moveSpeed = 3;
     // north
-    if (kMap[87]) { 
-        this.y -= 1;
+    if (kMap[87]) {
+        if (this.y >= -12) {
+            this.y -= moveSpeed;
+        }
         this.direction = "North";
     }
     // east
     if (kMap[68]) { 
-        this.x += 1;
+        if (this.x <= 695) {
+            this.x += moveSpeed;
+        }
         this.direction = "East";
     }
     // south
     if (kMap[83]) { 
-        this.y += 1;
+        if (this.y <= 682) {
+            this.y += moveSpeed;
+        }
         this.direction = "South";
     }
     // west
     if (kMap[65]) {
-        this.x -= 1;
+        if (this.x >= -12) {
+            this.x -= moveSpeed;
+        }
         this.direction = "West";
     }
     // attack
@@ -141,7 +150,7 @@ Surviver.prototype.updateSprite = function() {
                 if (this.isAttacking && this.frameIndex == this.movementMap["arrowFire"]) {
                     this.quiver.push(new Arrow({
                         ctx: this.ctx,
-                        image: arrowImage,
+                        image: arrowImages[this.direction],
                         direction: this.direction,
                         x: this.x,
                         y: this.y
