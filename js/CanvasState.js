@@ -7,20 +7,55 @@ function CanvasState(canvas) {
     this.width = canvas.width;//window.innerWidth;
     this.height = canvas.height;//window.innerHeight;
     this.ctx = canvas.getContext('2d');
+    this.edges = {
+        "North": -12,
+        "East": 748,
+        "South": 735,
+        "West": -12
+    };
+
+    this.directions = {
+        "N": "North",
+        "E": "East",
+        "S": "South",
+        "W": "West"
+    }
 
     // Create surviver
     this.surviver = new Surviver({
-        ctx: this.ctx,
+        state: state,
         image: suriverImage,
         frameSize: 64,
         ticksPerFrame: 5,
         loop: true,
-        x: 670,
-        y: 670
+        direction: this.directions["S"],
+        action: "move",
+        x: this.width / 2 - 32,
+        y: this.height / 2 - 32
     });
 
+    this.mob = new Mob({
+        state: state,
+        image: mobImages["Skeleton"],
+        frameSize: 64,
+        ticksPerFrame: 5,
+        loop: true,
+        direction: this.directions["S"],
+        action: "move",
+        x: 100,
+        y: 100
+    })
+
     // Map to track key presses
-    this.keyMap = {32: false, 65: false, 68: false, 83: false, 87: false};
+    this.keyMap = {
+        16: false, // shift
+        32: false, // space
+        65: false, // a
+        68: false, // d
+        83: false, // s
+        87: false // w
+    };
+
     window.addEventListener("keydown", function(e) {
         var map = state.keyMap;
         if (e.keyCode in map) {
@@ -42,6 +77,9 @@ function CanvasState(canvas) {
         state.drawBackground();
         state.surviver.updateSprite();
         state.surviver.renderSprite();
+
+        state.mob.renderSprite();
+
         requestAnimationFrame(draw);
     }
 }

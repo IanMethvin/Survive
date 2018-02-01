@@ -1,80 +1,57 @@
 // Create Surviver object
 function Surviver(options) {
 
-    // Drawing properties
-    this.ctx = options.ctx;
-    this.image = options.image;
-    this.width = this.image.width;
-    this.height = this.image.height;
+    // Inherit Agent's properties and functions
+    Agent.call(this, options);
 
-    // Animation settings
-    this.frameSize = options.frameSize;
-    this.frameIndex = 0;
-    this.tickCount = 0;
-    this.ticksPerFrame = options.ticksPerFrame || 0;
-    this.numberOfHFrames = suriverImage.width / this.frameSize;
-    this.numberOfVFrames = suriverImage.height / this.frameSize;
-    this.loop = options.loop;
-
-    // Position settings
-    this.x = options.x;
-    this.y = options.y;
-    this.moving = false;
-    this.direction = "East";
-    this.action = "move";
-
-    // Attack settings
-    this.isAttacking = false;
+    // Surviver specific items
     this.quiver = [];
-
-    // Map for frame locations in sprite map
-    this.movementMap = {
-        "moveFrames": 9,
-        "moveNorth": 8,
-        "moveEast": 11,
-        "moveSouth": 10,
-        "moveWest": 9,
-        "attackFrames": 11,
-        "attackNorth": 16,
-        "attackEast": 19,
-        "attackSouth": 18,
-        "attackWest": 17,
-        "arrowFire": 9
-    }
-
-    this.setFramePosition();
 }
+
+// Setup the prototype chain 
+Surviver.prototype = Object.create(Agent.prototype);
 
 // Update coordinates to move Surviver
 Surviver.prototype.move = function(kMap) {
-    var moveSpeed = 3;
+    var ms = this.moveSpeed;
+    var edges = this.state.edges;
+    var dirs = this.directions;
+    var d;
+    // speed boost for testing
+    if (kMap[16]) {
+        ms = this.boostSpeed;
+    }
     // north
     if (kMap[87]) {
-        if (this.y >= -12) {
-            this.y -= moveSpeed;
+        d = dirs["N"];
+        if (this.y >= edges[d]) {
+            this.y -= ms;
         }
-        this.direction = "North";
+        this.direction = d;
     }
     // east
     if (kMap[68]) { 
-        if (this.x <= 695) {
-            this.x += moveSpeed;
+        d = dirs["E"]
+        if (this.x <= edges[d]) {
+            this.x += ms;
         }
-        this.direction = "East";
+        this.direction = d;
     }
     // south
     if (kMap[83]) { 
-        if (this.y <= 682) {
-            this.y += moveSpeed;
+        d = dirs["S"];
+        if (this.y <= edges[d]) {
+            this.y += ms;
         }
-        this.direction = "South";
+        this.direction = d;
     }
     // west
     if (kMap[65]) {
-        if (this.x >= -12) {
-            this.x -= moveSpeed;
+        d = dirs["W"];
+        if (this.x >= edges[d]) {
+            this.x -= ms;
         }
-        this.direction = "West";
+        this.direction = d;
     }
     // attack
     if (kMap[32]) {
@@ -98,43 +75,6 @@ Surviver.prototype.move = function(kMap) {
     this.setFramePosition();
 }
 
-// Draw the animation
-Surviver.prototype.renderSprite = function() {
-    // Rename variables for convenience 
-    var img = this.image;
-    var w = this.width;
-    var h = this.height;
-    var fSize = this.frameSize;
-    var fIndex = this.frameIndex;
-    var hFrames = this.numberOfHFrames;
-    var vFrames = this.numberOfVFrames;
-    var vfIndex = this.vFrameIndex;
-
-    // Set source variables
-    var sx = fIndex * w / hFrames;
-    var sy = vfIndex * fSize; //(vFrames - 2) * fSize;//fIndex * h / vFrames;
-    var sw = w / hFrames;
-    var sh = h / vFrames;//vFrames;
-
-    // Set destination variables 
-    var dx = this.x;
-    var dy = this.y;
-    var dw = w / hFrames;
-    var dh = h / vFrames;
-
-    this.ctx.drawImage(
-        img, // Source image object
-        sx, // Source x
-        sy, // Source y
-        sw, // Source width
-        sh, // Source height
-        dx, // Destination x
-        dy, // Destination y
-        dw, // Destination width
-        dh // Destination height
-    );
-}
-
 // Update sprite frame index for animation
 Surviver.prototype.updateSprite = function() {
     this.tickCount += 1;
@@ -149,7 +89,7 @@ Surviver.prototype.updateSprite = function() {
                 // Only fire the arrow once the correct frame has been reached
                 if (this.isAttacking && this.frameIndex == this.movementMap["arrowFire"]) {
                     this.quiver.push(new Arrow({
-                        ctx: this.ctx,
+                        state: this.state,
                         image: arrowImages[this.direction],
                         direction: this.direction,
                         x: this.x,
@@ -179,15 +119,4 @@ Surviver.prototype.updateSprite = function() {
         }
     });
     this.quiver = remainingArrows;
-}
-
-Surviver.prototype.stopAction = function() {  
-    this.moving = false;
-    this.action = "move";
-}
-
-// Set frame index based off action and update number of frames for that action
-Surviver.prototype.setFramePosition = function() {
-    this.vFrameIndex = this.movementMap[this.action + this.direction];
-    this.hFrameCount = this.movementMap[this.action + "Frames"];
 }
