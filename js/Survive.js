@@ -25,7 +25,7 @@ function loadSurviverImage() {
 
 function loadMobImages() {
     var mobSkeleton = new Image();
-    mobSkeleton.src = "img/spriteSkeleton.png";
+    mobSkeleton.src = "img/spriteSkeletonDagger.png";
     mobImages["Skeleton"] = mobSkeleton;
 }
 

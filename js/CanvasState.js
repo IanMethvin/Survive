@@ -25,11 +25,10 @@ function CanvasState(canvas) {
     this.surviver = new Surviver({
         state: state,
         image: suriverImage,
-        frameSize: 64,
         ticksPerFrame: 5,
-        loop: true,
         direction: this.directions["S"],
         action: "move",
+        moveSpeed: 3,
         x: this.width / 2 - 32,
         y: this.height / 2 - 32
     });
@@ -37,17 +36,16 @@ function CanvasState(canvas) {
     this.mob = new Mob({
         state: state,
         image: mobImages["Skeleton"],
-        frameSize: 64,
-        ticksPerFrame: 5,
-        loop: true,
+        ticksPerFrame: 10,
         direction: this.directions["S"],
         action: "move",
+        moveSpeed: .5,
         x: 100,
         y: 100
-    })
+    });
 
     // Map to track key presses
-    this.keyMap = {
+    this.surviverKeyMap = {
         16: false, // shift
         32: false, // space
         65: false, // a
@@ -57,14 +55,14 @@ function CanvasState(canvas) {
     };
 
     window.addEventListener("keydown", function(e) {
-        var map = state.keyMap;
+        var map = state.surviverKeyMap;
         if (e.keyCode in map) {
             map[e.keyCode] = true;
             state.checkMotion();
         }
     });
     window.addEventListener("keyup", function(e) {
-        var map = state.keyMap;
+        var map = state.surviverKeyMap;
         if (e.keyCode in map) {
             map[e.keyCode] = false;
             state.checkMotion();
@@ -74,11 +72,15 @@ function CanvasState(canvas) {
     // start the animation
     requestAnimationFrame(draw);
     function draw() {
+        var s = state.surviver;
+        var m = state.mob;
         state.drawBackground();
-        state.surviver.updateSprite();
-        state.surviver.renderSprite();
+        s.updateSprite();
+        s.renderSprite();
 
-        state.mob.renderSprite();
+        m.move(m.generateKMap(s.x, s.y));
+        m.updateSprite();
+        m.renderSprite();
 
         requestAnimationFrame(draw);
     }
@@ -86,16 +88,16 @@ function CanvasState(canvas) {
 
 // Check if any movement or action is occuring and update accordingly 
 CanvasState.prototype.checkMotion = function(map) {
-    var map = this.keyMap;
-    var action = false;
+    var map = this.surviverKeyMap;
+    var inAction = false;
     for (var key in map) {
         if (map[key]) {
-            action = true;
-            state.surviver.move(map);
+            inAction = true;
+            state.surviver.move(map, "shoot");
             break;
         }
     }
-    if (!action) {
+    if (!inAction) {
         state.surviver.stopAction(map[32]);
     }
 }

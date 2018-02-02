@@ -5,75 +5,13 @@ function Surviver(options) {
     Agent.call(this, options);
 
     // Surviver specific items
+    this.attackType = "shoot";
     this.quiver = [];
 }
 
 // Setup the prototype chain 
 Surviver.prototype = Object.create(Agent.prototype);
 
-// Update coordinates to move Surviver
-Surviver.prototype.move = function(kMap) {
-    var ms = this.moveSpeed;
-    var edges = this.state.edges;
-    var dirs = this.directions;
-    var d;
-    // speed boost for testing
-    if (kMap[16]) {
-        ms = this.boostSpeed;
-    }
-    // north
-    if (kMap[87]) {
-        d = dirs["N"];
-        if (this.y >= edges[d]) {
-            this.y -= ms;
-        }
-        this.direction = d;
-    }
-    // east
-    if (kMap[68]) { 
-        d = dirs["E"]
-        if (this.x <= edges[d]) {
-            this.x += ms;
-        }
-        this.direction = d;
-    }
-    // south
-    if (kMap[83]) { 
-        d = dirs["S"];
-        if (this.y <= edges[d]) {
-            this.y += ms;
-        }
-        this.direction = d;
-    }
-    // west
-    if (kMap[65]) {
-        d = dirs["W"];
-        if (this.x >= edges[d]) {
-            this.x -= ms;
-        }
-        this.direction = d;
-    }
-    // attack
-    if (kMap[32]) {
-        this.action = "attack";
-        this.isAttacking = true;
-    }
-    else {
-        this.action = "move";
-        if (this.frameIndex > this.movementMap[this.action + "Frames"]) {
-            this.frameIndex = 1;
-        }
-    }
-    // check if directional key is pressed and set movement bool accordingly 
-    if (kMap[87] || kMap[68] || kMap[83] || kMap[65]) {
-        this.moving = true;
-    }
-    else {
-        this.moving = false;
-    }
-
-    this.setFramePosition();
-}
 
 // Update sprite frame index for animation
 Surviver.prototype.updateSprite = function() {
@@ -99,7 +37,7 @@ Surviver.prototype.updateSprite = function() {
             }	
             else if (this.loop) {
                 // check if attack animation has completed, if so switch to 'move' frame
-                if (this.action != "attack") {
+                if (this.action != "shoot") {
                     this.isAttacking = false;
                     this.action = "move";
                     this.setFramePosition();

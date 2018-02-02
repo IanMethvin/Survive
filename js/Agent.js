@@ -8,16 +8,16 @@ function Agent(options) {
     this.height = this.image.height;
 
     // Animation settings
-    this.frameSize = options.frameSize;
+    this.frameSize = 64;
     this.frameIndex = 0;
     this.tickCount = 0;
     this.ticksPerFrame = options.ticksPerFrame || 0;
     this.numberOfHFrames = suriverImage.width / this.frameSize;
     this.numberOfVFrames = suriverImage.height / this.frameSize;
-    this.loop = options.loop;
+    this.loop = true;
 
     // Position settings
-    this.moveSpeed = 3;
+    this.moveSpeed = options.moveSpeed;
     this.boostSpeed = 12;
     this.x = options.x;
     this.y = options.y;
@@ -36,12 +36,82 @@ function Agent(options) {
         "moveEast": 11,
         "moveSouth": 10,
         "moveWest": 9,
-        "attackFrames": 11,
-        "attackNorth": 16,
-        "attackEast": 19,
-        "attackSouth": 18,
-        "attackWest": 17,
-        "arrowFire": 9
+        "shootFrames": 11,
+        "shootNorth": 16,
+        "shootEast": 19,
+        "shootSouth": 18,
+        "shootWest": 17,
+        "arrowFire": 9,
+        "slashFrames": 6,
+        "slashNorth": 12,
+        "slashEast": 15,
+        "slashSouth": 14,
+        "slashWest": 13
+    }
+
+    this.setFramePosition();
+}
+
+
+// Update coordinates to move Surviver
+Agent.prototype.move = function(kMap) {
+    var ms = this.moveSpeed;
+    var edges = this.state.edges;
+    var dirs = this.directions;
+    var d;
+    // speed boost for testing
+    if (kMap[16]) {
+        ms = this.boostSpeed;
+    }
+    // north
+    if (kMap[87]) {
+        d = dirs["N"];
+        if (this.y >= edges[d]) {
+            this.y -= ms;
+        }
+        this.direction = d;
+    }
+    // east
+    if (kMap[68]) { 
+        d = dirs["E"]
+        if (this.x <= edges[d]) {
+            this.x += ms;
+        }
+        this.direction = d;
+    }
+    // south
+    if (kMap[83]) { 
+        d = dirs["S"];
+        if (this.y <= edges[d]) {
+            this.y += ms;
+        }
+        this.direction = d;
+    }
+    // west
+    if (kMap[65]) {
+        d = dirs["W"];
+        if (this.x >= edges[d]) {
+            this.x -= ms;
+        }
+        this.direction = d;
+    }
+    // attack
+    if (kMap[32]) {
+        this.action = this.attackType;
+        this.isAttacking = true;
+    }
+    else {
+        this.action = "move";
+        if (this.frameIndex > this.movementMap[this.action + "Frames"]) {
+            this.frameIndex = 1;
+        }
+    }
+    // check if directional key is pressed and set movement bool accordingly 
+    if (kMap[87] || kMap[68] || kMap[83] || kMap[65]) {
+        this.moving = true;
+    }
+    else {
+        this.moving = false;
     }
 
     this.setFramePosition();
