@@ -28,6 +28,7 @@ function Agent(options) {
 
     // Attack settings
     this.isAttacking = false;
+    this.isHurt = false;
 
     // Map for frame locations in sprite map
     this.movementMap = {
@@ -46,7 +47,9 @@ function Agent(options) {
         "slashNorth": 12,
         "slashEast": 15,
         "slashSouth": 14,
-        "slashWest": 13
+        "slashWest": 13,
+        "hurtFrames": 6,
+        "hurt": 20
     }
 
     this.setFramePosition();
@@ -100,7 +103,7 @@ Agent.prototype.move = function(kMap) {
         this.action = this.attackType;
         this.isAttacking = true;
     }
-    else {
+    else if (!this.isHurt) {
         this.action = "move";
         if (this.frameIndex > this.movementMap[this.action + "Frames"]) {
             this.frameIndex = 1;
@@ -131,9 +134,9 @@ Agent.prototype.renderSprite = function() {
 
     // Set source variables
     var sx = fIndex * w / hFrames;
-    var sy = vfIndex * fSize; //(vFrames - 2) * fSize;//fIndex * h / vFrames;
+    var sy = vfIndex * fSize;
     var sw = w / hFrames;
-    var sh = h / vFrames;//vFrames;
+    var sh = h / vFrames;
 
     // Set destination variables 
     var dx = this.x;
@@ -161,6 +164,10 @@ Agent.prototype.stopAction = function() {
 
 // Set frame index based off action and update number of frames for that action
 Agent.prototype.setFramePosition = function() {
-    this.vFrameIndex = this.movementMap[this.action + this.direction];
+    var ad = this.action;
+    if (this.action != "hurt") {
+        ad += this.direction
+    }
+    this.vFrameIndex = this.movementMap[ad];
     this.hFrameCount = this.movementMap[this.action + "Frames"];
 }

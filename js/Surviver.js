@@ -17,7 +17,7 @@ Surviver.prototype = Object.create(Agent.prototype);
 Surviver.prototype.updateSprite = function() {
     this.tickCount += 1;
     // Only move frame index if in motion
-    if (this.isAttacking || this.moving) {
+    if (this.isAttacking || this.moving || this.isHurt) {
         if (this.tickCount > this.ticksPerFrame) {
             this.tickCount = 0;
             // If the current frame index is in range
@@ -28,14 +28,18 @@ Surviver.prototype.updateSprite = function() {
                 if (this.isAttacking && this.frameIndex == this.movementMap["arrowFire"]) {
                     this.quiver.push(new Arrow({
                         state: this.state,
-                        image: arrowImages[this.direction],
+                        image: arrowImage, //arrowImages[this.direction],
                         direction: this.direction,
                         x: this.x,
                         y: this.y
                     }));
                 }
-            }	
+            }
             else if (this.loop) {
+                if (this.isHurt) {
+                    this.state.endGame();
+                    return;
+                }
                 // check if attack animation has completed, if so switch to 'move' frame
                 if (this.action != "shoot") {
                     this.isAttacking = false;

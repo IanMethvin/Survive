@@ -13,13 +13,18 @@ function CanvasState(canvas) {
         "South": 735,
         "West": -12
     };
-
     this.directions = {
         "N": "North",
         "E": "East",
         "S": "South",
         "W": "West"
     }
+
+    // Game settings
+    this.isGameOver = false;
+    this.mobs = [];
+    this.mobSpawnCount = 0;
+    this.mobSpawnCountLimit = 1000;
 
     // Create surviver
     this.surviver = new Surviver({
@@ -31,17 +36,6 @@ function CanvasState(canvas) {
         moveSpeed: 3,
         x: this.width / 2 - 32,
         y: this.height / 2 - 32
-    });
-
-    this.mob = new Mob({
-        state: state,
-        image: mobImages["Skeleton"],
-        ticksPerFrame: 10,
-        direction: this.directions["S"],
-        action: "move",
-        moveSpeed: .5,
-        x: 100,
-        y: 100
     });
 
     // Map to track key presses
@@ -73,16 +67,65 @@ function CanvasState(canvas) {
     requestAnimationFrame(draw);
     function draw() {
         var s = state.surviver;
-        var m = state.mob;
+        var ms = state.mobs;
+
         state.drawBackground();
+        state.checkMobSpawn();
         s.updateSprite();
         s.renderSprite();
 
-        m.move(m.generateKMap(s.x, s.y));
-        m.updateSprite();
-        m.renderSprite();
 
-        requestAnimationFrame(draw);
+        _.each(ms, function(m) {
+            m.move(m.generateKMap(s.x, s.y));
+            m.updateSprite();
+            m.renderSprite();
+
+            state.checkMobContactSurviver(m);
+        });
+
+        if (!state.isGameOver) {
+            requestAnimationFrame(draw);
+        }
+    }
+}
+
+// Check timer and see if it is time to spawn a mob
+CanvasState.prototype.checkMobSpawn = function() {
+    if (this.mobSpawnCount > this.mobSpawnCountLimit || this.mobs.length == 0) {
+        this.mobs.push(new Mob({
+            state: this,
+            image: mobImages["Skeleton"],
+            ticksPerFrame: 10,
+            direction: this.directions["S"],
+            action: "move",
+            moveSpeed: .5,
+            x: this.randomX(),
+            y: this.randomY()
+        }));
+        this.mobSpawnCount = 0;
+    }
+    this.mobSpawnCount += 1;
+}
+
+// Write end game message to screen
+CanvasState.prototype.endGame = function() {
+    this.isGameOver = true;
+    var ctx = this.ctx;
+    ctx.font = "50px Impact MS";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER", this.width/2, this.height/2 - 25); 
+}
+
+// Check if Mob has made contact with Surviver
+CanvasState.prototype.checkMobContactSurviver = function(m) {
+    var s = this.surviver;
+    var fs = s.frameSize / 2;
+    if (!s.isHurt && m.x < s.x + fs && m.x + fs > s.x && m.y < s.y + fs && m.y + fs > s.y) {
+        s.action = "hurt";
+        s.frameIndex = 0;
+        s.isHurt = true;
+        s.setFramePosition();
     }
 }
 
@@ -117,4 +160,14 @@ CanvasState.prototype.drawBackground = function () {
 // Clear the canvas
 CanvasState.prototype.clear = function() {
     this.ctx.clearRect(0, 0, this.width, this.height);
+}
+
+// Generate random x on canvas
+CanvasState.prototype.randomX = function() {
+    return randomIntFromInterval(0, this.edges["East"]);
+}
+
+// Generate random y on canvas
+CanvasState.prototype.randomY = function() {
+    return randomIntFromInterval(0, this.edges["South"]);
 }

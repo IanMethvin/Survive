@@ -13,7 +13,7 @@ Mob.prototype = Object.create(Agent.prototype);
 Mob.prototype.generateKMap = function(sx, sy) {
     var x = this.x;
     var y = this.y;
-    var fs = this.frameSize;
+    var fs = this.frameSize * 1.5;
     var kMap = {
         16: false, // shift
         32: false, // space

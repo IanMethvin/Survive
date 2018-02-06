@@ -2,7 +2,8 @@ var canvas = {};
 var state = {};
 var suriverImage;
 var mobImages = {};
-var arrowImages = {};
+var arrowImage;
+//var arrowImages = {};
 
 function initializeGameState() {
     canvas = $("#gameCanvas");
@@ -30,36 +31,12 @@ function loadMobImages() {
 }
 
 function loadArrowImages() {
-    var arrowNorth = new Image();
-    arrowNorth.src = "img/arrowNorth.png";
-    arrowImages["North"] = arrowNorth;
-
-    var arrowEast = new Image();
-    arrowEast.src = "img/arrowEast.png";
-    arrowImages["East"] = arrowEast;
-
-    var arrowSouth = new Image();
-    arrowSouth.src = "img/arrowSouth.png";
-    arrowImages["South"] = arrowSouth;
-
-    var arrowWest = new Image();
-    arrowWest.src = "img/arrowWest.png";
-    arrowImages["West"] = arrowWest;
+    arrowImage = new Image();
+    arrowImage.src = "img/arrowSprite.png";
 }
 
-function extend(base, sub) {
-    // Avoid instantiating the base class just to setup inheritance
-    // Also, do a recursive merge of two prototypes, so we don't overwrite 
-    // the existing prototype, but still maintain the inheritance chain
-    // Thanks to @ccnokes
-    var origProto = sub.prototype;
-    sub.prototype = Object.create(base.prototype);
-    for (var key in origProto)  {
-       sub.prototype[key] = origProto[key];
-    }
-    // The constructor property was set wrong, let's fix it
-    Object.defineProperty(sub.prototype, 'constructor', { 
-      enumerable: false, 
-      value: sub 
-    });
-  }
+// Generate a random number between the min and max.
+function randomIntFromInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
