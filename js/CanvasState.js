@@ -21,7 +21,9 @@ function CanvasState(canvas) {
     }
 
     // Game settings
+    this.isGameStarted = false;
     this.isGameOver = false;
+    this.gameScore = 0;
     this.mobs = [];
     this.mobSpawnCount = 0;
     this.mobSpawnCountLimit = 1000;
@@ -51,8 +53,14 @@ function CanvasState(canvas) {
     window.addEventListener("keydown", function(e) {
         var map = state.surviverKeyMap;
         if (e.keyCode in map) {
-            map[e.keyCode] = true;
-            state.checkMotion();
+
+            if (!state.isGameStarted && e.keyCode == 32) {
+                state.startGame();
+            }
+            else {
+                map[e.keyCode] = true;
+                state.checkMotion();
+            }
         }
     });
     window.addEventListener("keyup", function(e) {
@@ -63,30 +71,53 @@ function CanvasState(canvas) {
         }
     });
 
-    // start the animation
-    requestAnimationFrame(draw);
-    function draw() {
-        var s = state.surviver;
-        var ms = state.mobs;
+    this.initialDrawing();
+}
 
-        state.drawBackground();
-        state.checkMobSpawn();
-        s.updateSprite();
-        s.renderSprite();
+// Draw function
+CanvasState.prototype.draw = function() {
+    var s = this.surviver;
+    // Game drawing
+    this.drawBackground();
+    this.checkMobSpawn();
+    // Surviver drawing
+    s.updateSprite();
+    s.renderSprite();
+    // Mob Drawing
+    this.manageMobs();
+    this.mobs = this.mobs;
 
-
-        _.each(ms, function(m) {
-            m.move(m.generateKMap(s.x, s.y));
-            m.updateSprite();
-            m.renderSprite();
-
-            state.checkMobContactSurviver(m);
-        });
-
-        if (!state.isGameOver) {
-            requestAnimationFrame(draw);
-        }
+    if (!this.isGameOver) {
+        requestAnimationFrame(this.draw.bind(this));
     }
+}
+
+CanvasState.prototype.manageMobs = function() {
+    var ms = this.mobs;
+    var s = this.surviver;
+    var state = this;
+    var remainingMobs = [];
+    
+    _.each(ms, function(m) {
+        m.move(m.generateKMap(s.x, s.y));
+        m.updateSprite();
+        m.renderSprite();
+        // check if Arrow has hit Mob
+        _.each(s.quiver, function(arrow) {
+            state.checkContactMade(m, arrow);
+            // REMOVE ARROW IF CONTACT MADE
+        });
+        if (!m.isDead) {
+            remainingMobs.push(m);
+        }
+        else {
+            state.gameScore += 10;
+        }
+        // check if Mob has hit Surviver
+        state.checkContactMade(s, m);
+    });
+
+    this.mobs = remainingMobs;
 }
 
 // Check timer and see if it is time to spawn a mob
@@ -107,6 +138,13 @@ CanvasState.prototype.checkMobSpawn = function() {
     this.mobSpawnCount += 1;
 }
 
+// Start game
+CanvasState.prototype.startGame = function() {
+    this.isGameStarted = true;    
+    // start the animation
+    requestAnimationFrame(state.draw.bind(this));
+}
+
 // Write end game message to screen
 CanvasState.prototype.endGame = function() {
     this.isGameOver = true;
@@ -115,17 +153,21 @@ CanvasState.prototype.endGame = function() {
     ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
     ctx.fillText("GAME OVER", this.width/2, this.height/2 - 25); 
+    // ADD FINAL SCORE
 }
 
-// Check if Mob has made contact with Surviver
-CanvasState.prototype.checkMobContactSurviver = function(m) {
-    var s = this.surviver;
-    var fs = s.frameSize / 2;
-    if (!s.isHurt && m.x < s.x + fs && m.x + fs > s.x && m.y < s.y + fs && m.y + fs > s.y) {
-        s.action = "hurt";
-        s.frameIndex = 0;
-        s.isHurt = true;
-        s.setFramePosition();
+// Check if attacker has made contact with target
+CanvasState.prototype.checkContactMade = function(target, attacker) {
+    // object that is doing the damage
+    var a = attacker;
+    // object that will be getting hurt
+    var t = target;
+    var ts = t.frameSize / 2;
+    if (!t.isHurt && a.x < t.x + ts && a.x + ts > t.x && a.y < t.y + ts && a.y + ts > t.y) {
+        t.action = "hurt";
+        t.frameIndex = 0;
+        t.isHurt = true;
+        t.setFramePosition();
     }
 }
 
@@ -141,8 +183,27 @@ CanvasState.prototype.checkMotion = function(map) {
         }
     }
     if (!inAction) {
-        state.surviver.stopAction(map[32]);
+        state.surviver.stopAction();
     }
+}
+
+// Draw start screen
+CanvasState.prototype.initialDrawing = function() {
+    this.drawBackground();
+    var ctx = this.ctx;
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.font = "20px Impact MS";
+    // Game play instructions 
+    ctx.fillText("W A S D to move", this.width / 2, this.height - 50); 
+    ctx.fillText("Space to attack", this.width / 2, this.height - 75); 
+    ctx.fillText("Press Space to start", this.width / 2, this.height / 2 + 55); 
+    // title
+    ctx.fillStyle = "#660000";
+    ctx.font = "60px Impact MS";
+    ctx.fillText("Survive?", this.width / 2, this.height / 2 - 30); 
+    // add surviver
+    this.surviver.renderSprite();
 }
 
 // Fill in background display 
@@ -155,6 +216,12 @@ CanvasState.prototype.drawBackground = function () {
     // Fill in 
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, w, h);
+
+    // Draw Score
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.font = "20px Impact MS";
+    ctx.fillText("Score: " + this.gameScore, this.width - 75, 20); 
 }
 
 // Clear the canvas

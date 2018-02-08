@@ -104,7 +104,7 @@ Arrow.prototype.isOffScreen = function() {
     var isOffScreen = false;
     var dirs = this.directions;
     var e = this.edges;
-    var padding = 50;
+    var padding = 0;
     switch (this.direction) {
         case dirs["N"]:
             isOffScreen = this.y < e[dirs["N"]] - padding;

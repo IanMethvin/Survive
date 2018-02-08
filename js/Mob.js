@@ -5,11 +5,13 @@ function Mob(options) {
     Agent.call(this, options);
 
     this.attackType = "slash";
+    this.isDead = false;
 }
 
 // Setup the prototype chain 
 Mob.prototype = Object.create(Agent.prototype);
 
+// Generate movement map for mob movement
 Mob.prototype.generateKMap = function(sx, sy) {
     var x = this.x;
     var y = this.y;
@@ -55,8 +57,11 @@ Mob.prototype.updateSprite = function() {
                 this.frameIndex += 1;
             }	
             else if (this.loop) {
+                if (this.action == "hurt") {
+                    this.isDead = true;
+                }
                 // check if attack animation has completed, if so switch to 'move' frame
-                if (this.action != "slash") {
+                else if (this.action != "slash") {
                     this.isAttacking = false;
                     this.action = "move";
                     this.setFramePosition();

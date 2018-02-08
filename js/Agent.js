@@ -58,6 +58,11 @@ function Agent(options) {
 
 // Update coordinates to move Surviver
 Agent.prototype.move = function(kMap) {
+    // dont allow movement if hurt
+    if (this.isHurt) {
+        return;
+    }
+
     var ms = this.moveSpeed;
     var edges = this.state.edges;
     var dirs = this.directions;
